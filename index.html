@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spit Fighter - Nền Tảng Battle Rap</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- ĐƯỜNG DẪN GỌI FILE CSS RIÊNG BIỆT -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="dark-theme min-h-screen flex flex-col justify-between" id="main-body">
+
+    <!-- ================= MÀN HÌNH ĐĂNG NHẬP / ĐĂNG KÝ ================= -->
+    <div id="auth-screen" class="flex-1 flex items-center justify-center p-4">
+        <div class="w-full max-w-md custom-card rounded-2xl p-8 space-y-6 backdrop-blur-md">
+            <div class="text-center space-y-2">
+                <h1 class="text-4xl font-black uppercase tracking-widest glow-title">SPIT FIGHTER</h1>
+                <p class="text-xs font-semibold uppercase tracking-widest opacity-70">Battle A Cappella Miền Nam</p>
+            </div>
+
+            <div class="flex border-b border-slate-500/30">
+                <button type="button" onclick="switchTab('login')" id="tab-login" class="flex-1 pb-3 text-sm font-bold custom-primary-text border-b-2 custom-primary-border transition-all uppercase">Đăng Nhập</button>
+                <button type="button" onclick="switchTab('register')" id="tab-register" class="flex-1 pb-3 text-sm font-bold opacity-60 border-b-2 border-transparent hover:opacity-100 transition-all uppercase">Đăng Ký</button>
+            </div>
+
+            <form id="form-login" onsubmit="handleLogin(event)" class="space-y-5 pt-2">
+                <div>
+                    <label class="block text-xs font-bold uppercase mb-1.5 opacity-80">Tên tài khoản</label>
+                    <input type="text" id="login-user" required class="w-full bg-slate-500/10 border border-slate-500/30 rounded-xl px-4 py-3 text-sm focus:outline-none transition-colors" placeholder="Nhập tên tài khoản...">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold uppercase mb-1.5 opacity-80">Mật khẩu</label>
+                    <input type="password" id="login-pass" required class="w-full bg-slate-500/10 border border-slate-500/30 rounded-xl px-4 py-3 text-sm focus:outline-none transition-colors" placeholder="••••••••">
+                </div>
+                <div id="login-msg" class="text-sm font-bold text-rose-500 text-center hidden"></div>
+                <button type="submit" class="w-full py-3.5 mt-2 glow-button rounded-xl uppercase tracking-wider text-sm transition-all active:scale-95">Đăng Nhập</button>
+            </form>
+
+            <form id="form-register" onsubmit="handleRegister(event)" class="space-y-4 pt-2 hidden">
+                <div>
+                    <label class="block text-xs font-bold uppercase mb-1.5 opacity-80">Tên Tài Khoản (Duy nhất)</label>
+                    <input type="text" id="reg-user" oninput="checkRegisterUsername(this.value)" required class="w-full bg-slate-500/10 border border-slate-500/30 rounded-xl px-4 py-3 text-sm focus:outline-none transition-colors" placeholder="Không được trùng">
+                    <div id="reg-username-alert" class="text-xs font-bold text-rose-500 mt-1.5 hidden"></div>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold uppercase mb-1.5 opacity-80">Mật khẩu</label>
+                    <input type="password" id="reg-pass" required class="w-full bg-slate-500/10 border border-slate-500/30 rounded-xl px-4 py-3 text-sm focus:outline-none transition-colors" placeholder="••••••••">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold uppercase mb-1.5 opacity-80">Nhập lại Mật khẩu</label>
+                    <input type="password" id="reg-pass-confirm" required class="w-full bg-slate-500/10 border border-slate-500/30 rounded-xl px-4 py-3 text-sm focus:outline-none transition-colors" placeholder="••••••••">
+                </div>
+                <div id="reg-msg" class="text-sm font-bold text-center hidden"></div>
+                <button type="submit" id="btn-submit-reg" class="w-full py-3.5 mt-2 glow-button rounded-xl uppercase tracking-wider text-sm transition-all active:scale-95">Tạo Tài Khoản Mới</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ================= MÀN HÌNH DASHBOARD ================= -->
+    <div id="dashboard-screen" class="flex-1 w-full flex flex-col hidden">
+        <header class="w-full border-b px-6 py-4 flex justify-between items-center shadow-sm backdrop-blur-md">
+            <h2 class="text-2xl sm:text-3xl font-black uppercase tracking-widest glow-title">SPIT FIGHTER</h2>
+            
+            <div class="flex items-center gap-3">
+                <div class="relative">
+                    <button onclick="toggleNotifDropdown()" class="relative flex items-center justify-center p-3 h-[52px] w-[52px] rounded-xl border border-slate-500/30 shadow-inner hover:opacity-80 transition-all">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+                        <span id="notif-badge" class="absolute -top-1 -right-1 bg-red-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full hidden">0</span>
+                    </button>
+                    <div id="notif-dropdown" class="absolute right-0 mt-2 w-80 custom-card rounded-2xl shadow-2xl hidden z-50 overflow-hidden">
+                        <div class="p-4 border-b border-slate-500/20 font-bold text-sm uppercase tracking-wider custom-primary-text">Thông báo của bạn</div>
+                        <div id="notif-list" class="max-h-72 overflow-y-auto divide-y divide-slate-500/20"></div>
+                    </div>
+                </div>
+
+                <div onclick="viewOwnProfile()" class="flex items-center gap-4 py-2 px-4 rounded-xl border border-slate-500/30 shadow-inner cursor-pointer hover:opacity-80 transition-opacity">
+                    <div class="text-right hidden sm:block">
+                        <p id="dash-display-name" class="font-bold text-sm uppercase tracking-wide"></p>
+                        <p id="dash-role-tag" class="text-[10px] custom-primary-text font-bold uppercase tracking-widest">Thành viên</p>
+                    </div>
+                    <div id="dash-avatar" class="w-10 h-10 rounded-full custom-primary-bg flex items-center justify-center font-black text-[#0b0f19] shadow-md text-lg overflow-hidden border border-slate-500/40"></div>
+                </div>
+
+                <div class="relative group">
+                    <button class="flex items-center justify-center p-3 h-[52px] w-[52px] rounded-xl border border-slate-500/30 shadow-inner hover:opacity-80 transition-all">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                    </button>
+                    <div class="absolute right-0 mt-2 w-48 custom-card rounded-xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 overflow-hidden">
+                        <div class="py-1">
+                            <a href="#" onclick="event.preventDefault(); showProfileScreen();" class="block px-4 py-3 text-sm font-semibold hover:opacity-80 transition-colors border-b border-slate-500/20">Tài khoản của tôi</a>
+                            <a href="#" onclick="event.preventDefault(); showSearchScreen();" class="block px-4 py-3 text-sm font-semibold hover:opacity-80 transition-colors border-b border-slate-500/20">Tìm bạn bè</a>
+                            <a href="#" onclick="event.preventDefault(); showChatScreen();" class="block px-4 py-3 text-sm font-semibold hover:opacity-80 transition-colors border-b border-slate-500/20">TalkShit</a>
+                            <a href="#" onclick="event.preventDefault(); showSettingsScreen();" class="block px-4 py-3 text-sm font-semibold hover:opacity-80 transition-colors border-b border-slate-500/20">Cài đặt</a>
+                            <a href="#" onclick="event.preventDefault(); handleSignOut();" class="block px-4 py-3 text-sm font-bold text-rose-500 hover:opacity-80 transition-colors">Đăng xuất</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- THANH MENU NGANG (NAVBAR) -->
+        <div class="w-full bg-slate-900/50 border-b border-slate-700/50 px-6 py-3 flex gap-6 overflow-x-auto" id="navbar-menu-items"></div>
+
+        <main class="flex-1 max-w-7xl w-full mx-auto p-6 sm:p-10 space-y-8" id="main-content-container">
+            <div class="flex items-center gap-3">
+                <span class="w-3 h-8 custom-primary-bg rounded-full inline-block shadow-lg"></span>
+                <h3 class="text-2xl font-black uppercase tracking-wider">BẢNG ĐIỀU KHIỂN SÀN ĐẤU</h3>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="custom-card rounded-2xl p-6 space-y-4 transition-all backdrop-blur-md">
+                    <h4 class="font-bold custom-primary-text uppercase text-sm tracking-wider flex items-center gap-2">🔥 Cáp Kèo Sắp Tới</h4>
+                    <ul class="space-y-3 text-sm divide-y divide-slate-500/20">
+                        <li class="pt-2 flex justify-between items-center">
+                            <span>Giải: Thích Thì Battle</span>
+                            <span class="text-xs custom-primary-bg text-[#0b0f19] px-2.5 py-1 rounded-full font-bold">Vòng Bảng</span>
+                        </li>
+                    </ul>
+                </div>
+                <div class="custom-card rounded-2xl p-6 space-y-4 transition-all backdrop-blur-md">
+                    <h4 class="font-bold custom-primary-text uppercase text-sm tracking-wider flex items-center gap-2">📜 Kho Lưu Trữ Lyrics</h4>
+                    <p class="text-sm opacity-80 leading-relaxed">Hệ thống ghi nhớ bar-for-bar schemes dành riêng cho tài khoản <span id="highlight-name" class="font-bold"></span>.</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- ================= MÀN HÌNH CÀI ĐẶT ================= -->
+    <div id="settings-screen" class="flex-1 w-full flex flex-col hidden backdrop-blur-md">
+        <header class="w-full border-b px-6 py-4 flex justify-between items-center shadow-sm backdrop-blur-md">
+            <h2 class="text-2xl font-black uppercase tracking-widest glow-title">CÀI ĐẶT GIAO DIỆN</h2>
+            <button onclick="hideSubScreens()" class="px-4 py-2 rounded-lg font-bold text-xs uppercase tracking-wider border border-slate-500/30">Quay Lại</button>
+        </header>
+        <main class="flex-1 max-w-4xl w-full mx-auto p-4 sm:p-8 space-y-6 overflow-y-auto">
+            <div class="custom-card rounded-2xl p-6 sm:p-8 space-y-6 backdrop-blur-md">
+                <div class="space-y-3">
+                    <h3 class="font-bold text-sm uppercase tracking-wider custom-primary-text">Chế độ hiển thị & Màu sắc</h3>
+                    <div class="flex flex-wrap items-center gap-4 bg-slate-500/10 p-4 rounded-xl border border-slate-500/20">
+                        <button onclick="setTheme('light')" class="px-4 py-2 text-xs font-bold rounded-xl bg-slate-200 text-slate-800 hover:bg-white transition-all shadow">☀️ Sáng</button>
+                        <button onclick="setTheme('dark')" class="px-4 py-2 text-xs font-bold rounded-xl bg-slate-800 text-slate-200 hover:bg-slate-700 transition-all shadow">🌙 Tối</button>
+                        <div class="flex items-center gap-2 pl-4 border-l border-slate-500/30">
+                            <span class="text-xs font-bold opacity-80">Màu chủ đạo:</span>
+                            <input type="color" id="color-picker" value="#00f2fe" onchange="setCustomColor(this.value)" class="w-8 h-8 rounded border-0 cursor-pointer bg-transparent">
+                        </div>
+                    </div>
+                </div>
+                <div class="pt-2">
+                    <button onclick="resetToDefaultSettings()" class="w-full py-3 bg-rose-600/20 border border-rose-500/40 text-rose-400 font-bold rounded-xl uppercase tracking-wider text-xs hover:bg-rose-600 hover:text-white transition-all">
+                        🔄 Khôi phục mặc định (Gốc Dark & Xanh Cyan)
+                    </button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- ================= MÀN HÌNH TÀI KHOẢN ================= -->
+    <div id="profile-screen" class="flex-1 w-full flex flex-col hidden backdrop-blur-md">
+        <header class="w-full border-b px-6 py-4 flex justify-between items-center shadow-sm backdrop-blur-md">
+            <h2 id="profile-header-title" class="text-2xl font-black uppercase tracking-widest glow-title">HỒ SƠ CÁ NHÂN</h2>
+            <button onclick="hideSubScreens()" class="px-4 py-2 rounded-lg font-bold text-xs uppercase tracking-wider border border-slate-500/30">Quay Lại</button>
+        </header>
+        <main class="flex-1 max-w-5xl w-full mx-auto p-4 sm:p-8 space-y-6 overflow-y-auto">
+            <div class="custom-card rounded-3xl overflow-hidden shadow-2xl relative border border-slate-700/40 backdrop-blur-md">
+                <div class="h-64 sm:h-96 w-full bg-slate-900 relative group overflow-hidden">
+                    <img id="profile-cover-img" onclick="openImageViewer(this.src)" class="w-full h-full object-cover hidden transition-transform duration-500 group-hover:scale-105 cursor-pointer" src="" alt="Cover Photo">
+                    <div id="profile-cover-placeholder" class="absolute inset-0 flex items-center justify-center opacity-40 font-bold text-sm tracking-widest uppercase pointer-events-none">Chưa có ảnh bìa</div>
+                    
+                    <label id="btn-edit-cover" class="absolute bottom-6 right-6 bg-black/80 hover:bg-black text-white text-xs font-bold px-5 py-3 rounded-2xl cursor-pointer backdrop-blur-md flex items-center gap-2 border border-white/20 transition-all shadow-2xl z-20 pointer-events-auto hidden">
+                        📷 Đổi ảnh bìa
+                        <input type="file" accept="image/*" class="hidden" onchange="handleCoverUpload(event)">
+                    </label>
+                </div>
+
+                <div class="px-8 pb-8 pt-4 relative flex flex-col md:flex-row items-center md:items-end justify-between gap-6 -mt-20 sm:-mt-24">
+                    <div class="flex flex-col md:flex-row items-center gap-6 text-center md:text-left">
+                        <div class="relative group">
+                            <div class="w-36 h-36 sm:w-44 sm:h-44 rounded-full border-4 border-slate-900 overflow-hidden flex items-center justify-center shadow-2xl relative bg-slate-800">
+                                <img id="profile-avatar-preview" onclick="openImageViewer(this.src)" class="w-full h-full object-cover hidden cursor-pointer" src="" alt="Avatar">
+                                <span id="profile-avatar-text" class="text-5xl font-black opacity-50">?</span>
+                            </div>
+                            <label id="btn-edit-avatar" class="absolute inset-0 flex items-center justify-center bg-black/70 text-white text-xs font-bold uppercase opacity-0 group-hover:opacity-100 transition-all rounded-full cursor-pointer backdrop-blur-sm z-20 pointer-events-auto hidden">
+                                Đổi Avatar
+                                <input type="file" accept="image/*" class="hidden" onchange="handleAvatarUpload(event)">
+                            </label>
+                        </div>
+                        <div class="space-y-1.5 pt-2 md:pt-20">
+                            <h3 id="view-display-name" class="text-3xl font-black uppercase tracking-wide"></h3>
+                            <p id="view-username" class="text-xs opacity-60 font-mono tracking-wider"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="space-y-6">
+                    <div class="custom-card rounded-3xl p-6 space-y-4 backdrop-blur-md">
+                        <h4 class="font-black text-sm uppercase tracking-wider custom-primary-text">Giới thiệu</h4>
+                        <div class="space-y-3 text-sm opacity-90 leading-relaxed">
+                            <p><b>Vai trò:</b> <span id="view-role" class="font-bold custom-primary-text">Khán giả</span></p>
+                            <p><b>Bio:</b> <span id="view-bio" class="italic opacity-80">Chưa có tiểu sử</span></p>
+                            <p><b>Ngày sinh:</b> <span id="view-dob" class="opacity-80">Chưa cập nhật</span></p>
+                        </div>
+                    </div>
+
+                    <div class="custom-card rounded-3xl p-6 space-y-4 backdrop-blur-md">
+                        <h4 class="font-black text-sm uppercase tracking-wider custom-primary-text">Ảnh & Khoảnh Khắc</h4>
+                        <div id="profile-photos-grid" class="grid grid-cols-3 gap-2"></div>
+                    </div>
+                </div>
+
+                <div class="md:col-span-2 space-y-6">
+                    <div id="owner-edit-section" class="custom-card rounded-3xl p-6 sm:p-8 space-y-6 backdrop-blur-md hidden">
+                        <h3 class="font-bold text-sm uppercase tracking-wider custom-primary-text border-b border-slate-500/20 pb-3">Chỉnh Sửa Hồ Sơ</h3>
+                        <form onsubmit="saveProfile(event)" class="space-y-5">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-bold uppercase mb-1.5 opacity-80">Tên Hiển Thị</label>
+                                    <input type="text" id="profile-display-name" required class="w-full bg-slate-500/10 border border-slate-500/30 rounded-xl px-4 py-3 text-sm focus:outline-none">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold uppercase mb-1.5 opacity-80">Vai Trò</label>
+                                    <select id="profile-role" class="w-full bg-slate-500/10 border border-slate-500/30 rounded-xl px-4 py-3 text-sm focus:outline-none">
+                                        <option value="Battler" class="bg-slate-900 text-white">Battler</option>
+                                        <option value="Ban Tổ chức" class="bg-slate-900 text-white">Ban Tổ chức</option>
+                                        <option value="Khán giả" class="bg-slate-900 text-white">Khán giả</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-bold uppercase mb-1.5 opacity-80">Ngày Sinh</label>
+                                    <input type="date" id="profile-dob" class="w-full bg-slate-500/10 border border-slate-500/30 rounded-xl px-4 py-3 text-sm focus:outline-none">
+                                </div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between items-end mb-1.5">
+                                    <label class="block text-xs font-bold uppercase opacity-80">Tiểu Sử</label>
+                                    <span id="bio-counter" class="text-xs font-bold opacity-50">0/10000</span>
+                                </div>
+                                <textarea id="profile-bio" maxlength="10000" rows="3" oninput="updateBioCounter()" class="w-full bg-slate-500/10 border border-slate-500/30 rounded-xl px-4 py-3 text-sm focus:outline-none resize-none"></textarea>
+                            </div>
+                            <div id="profile-msg" class="text-sm font-bold text-center hidden"></div>
+                            <div class="flex justify-end">
+                                <button type="submit" class="px-8 py-3 glow-button rounded-xl uppercase tracking-wider text-xs">Lưu Thay Đổi</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div id="post-box-container" class="custom-card rounded-3xl p-6 space-y-4 backdrop-blur-md">
+                        <div class="flex items-center gap-3 pb-4 border-b border-slate-500/20">
+                            <div id="post-box-avatar" class="w-10 h-10 rounded-full custom-primary-bg flex items-center justify-center font-black text-[#0b0f19] overflow-hidden shrink-0"></div>
+                            <div onclick="openPostModal()" class="flex-1 bg-slate-500/10 border border-slate-500/20 rounded-full px-5 py-3 text-sm opacity-70 cursor-pointer hover:bg-slate-500/20 transition-colors">What's on your mind?</div>
+                        </div>
+                        <div class="flex justify-around pt-1 text-xs font-bold opacity-80">
+                            <div onclick="openPostModal()" class="flex items-center gap-2 cursor-pointer hover:opacity-100 transition-opacity text-rose-500">🔴 Live video</div>
+                            <div onclick="openPostModal()" class="flex items-center gap-2 cursor-pointer hover:opacity-100 transition-opacity text-emerald-500">🖼️ Photo/video</div>
+                            <div onclick="openPostModal()" class="flex items-center gap-2 cursor-pointer hover:opacity-100 transition-opacity custom-primary-text">🚩 Life update</div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-6" id="profile-posts-container"></div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- ================= MÀN HÌNH TÌM BẠN BÈ ================= -->
+    <div id="search-screen" class="flex-1 w-full flex flex-col hidden backdrop-blur-md">
+        <header class="w-full border-b px-6 py-4 flex justify-between items-center shadow-sm backdrop-blur-md">
+            <h2 class="text-2xl font-black uppercase tracking-widest glow-title">TÌM KIẾM BẠN BÈ</h2>
+            <button onclick="hideSubScreens()" class="px-4 py-2 rounded-lg font-bold text-xs uppercase tracking-wider border border-slate-500/30">Quay Lại</button>
+        </header>
+        <main class="flex-1 max-w-4xl w-full mx-auto p-4 sm:p-8 space-y-6 overflow-y-auto">
+            <div class="custom-card rounded-2xl p-6 backdrop-blur-md">
+                <input type="text" id="search-input" oninput="handleSearch()" class="w-full bg-slate-500/10 border border-slate-500/30 rounded-xl px-4 py-3 text-sm focus:outline-none" placeholder="Nhập tên đăng nhập hoặc tên hiển thị...">
+            </div>
+            <div id="search-results" class="space-y-4">
+                <p class="text-center opacity-50 text-sm py-8">Nhập từ khóa để tìm kiếm thành viên trong hệ thống...</p>
+            </div>
+        </main>
+    </div>
+
+    <!-- ================= MÀN HÌNH TALKSHIT ================= -->
+    <div id="chat-screen" class="flex-1 w-full flex flex-col hidden backdrop-blur-md">
+        <header class="w-full border-b px-6 py-4 flex justify-between items-center shadow-sm backdrop-blur-md">
+            <div class="flex items-center gap-4">
+                <h2 class="text-2xl font-black uppercase tracking-widest glow-title">TALKSHIT</h2>
+                <button onclick="openCreateGroupModal()" class="px-3 py-1.5 custom-primary-bg text-[#0b0f19] rounded-xl font-bold text-xs shadow hover:opacity-90 transition-all flex items-center gap-1.5">👥 Tạo nhóm</button>
+            </div>
+            <button onclick="hideSubScreens()" class="px-4 py-2 rounded-lg font-bold text-xs uppercase tracking-wider border border-slate-500/30">Quay Lại</button>
+        </header>
+
+        <main class="flex-1 w-full flex overflow-hidden h-[calc(100vh-73px)] relative">
+            <div class="w-80 border-r border-slate-500/20 flex flex-col shrink-0 custom-card">
+                <div class="p-4 border-b border-slate-500/20 font-bold text-sm custom-primary-text uppercase">Đoạn Chat & Nhóm</div>
+                <div id="chat-friends-list" class="flex-1 overflow-y-auto divide-y divide-slate-500/20"></div>
+            </div>
+
+            <div id="chat-main-area" class="flex-1 flex flex-col hidden relative bg-cover bg-center" style="background-color: rgba(11, 15, 25, 0.95);">
+                <div id="chat-bg-overlay" class="absolute inset-0 bg-[#0b0f19]/85 pointer-events-none z-0"></div>
+
+                <div id="active-chat-header" class="p-4 border-b border-slate-500/20 flex items-center justify-between custom-card z-10"></div>
+                
+                <div id="message-list" class="flex-1 p-6 overflow-y-auto space-y-3 flex flex-col z-10"></div>
+                
+                <div id="reply-preview-container" class="hidden px-4 py-2 border-t border-slate-500/20 flex items-center justify-between z-10 bg-slate-900/90 text-xs">
+                    <div class="flex items-center gap-2 truncate">
+                        <span class="custom-primary-text font-bold">Đang trả lời:</span>
+                        <span id="reply-preview-text" class="italic opacity-80 truncate"></span>
+                    </div>
+                    <button type="button" onclick="cancelReply()" class="font-bold text-rose-500 px-2 py-0.5 rounded hover:bg-rose-500/20">×</button>
+                </div>
+
+                <div id="image-preview-container" class="hidden p-3 border-t border-slate-500/20 flex items-start gap-3 z-10 custom-card">
+                    <div class="relative inline-block">
+                        <img id="preview-img-tag" src="" class="h-20 w-auto rounded-lg border border-slate-500/30 shadow-md">
+                        <button type="button" onclick="cancelImagePreview()" class="absolute -top-2 -right-2 bg-rose-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold">×</button>
+                    </div>
+                    <span class="text-xs opacity-60 italic mt-1">File đang chờ gửi...</span>
+                </div>
+                
+                <div id="emoji-picker-container" class="hidden p-3 border-t border-slate-500/20 grid grid-cols-10 gap-2 bg-slate-900/90 z-10 max-h-36 overflow-y-auto text-lg"></div>
+
+                <form id="message-form" onsubmit="sendMessage(event)" class="p-4 border-t border-slate-500/20 flex items-center gap-2 relative z-10 custom-card">
+                    <button type="button" onclick="toggleEmojiPicker()" class="p-2 opacity-75 hover:opacity-100 transition-colors shrink-0 text-xl" title="Chọn Icon">😊</button>
+                    <label class="cursor-pointer p-2 opacity-75 hover:opacity-100 transition-colors shrink-0" title="Gửi hình ảnh hoặc video">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                        <input type="file" accept="image/*,video/*" class="hidden" onchange="handleFileSelect(event)">
+                    </label>
+
+                    <input type="text" id="message-input" autocomplete="off" placeholder="Nhập tin nhắn..." class="flex-1 bg-slate-500/10 border border-slate-500/30 rounded-xl px-4 py-3 text-sm focus:outline-none">
+                    <button type="submit" class="px-6 py-3 glow-button rounded-xl uppercase text-xs shrink-0">Gửi</button>
+                </form>
+            </div>
+
+            <!-- Sidebar Chat -->
+            <div id="chat-sidebar" class="w-80 border-l border-slate-500/20 flex flex-col shrink-0 hidden overflow-y-auto custom-card z-10">
+                <div class="p-6 flex flex-col items-center border-b border-slate-500/20 text-center">
+                    <div id="sidebar-avatar" onclick="viewUserProfileFromChat()" class="w-20 h-20 rounded-full custom-primary-bg flex items-center justify-center font-bold text-[#0b0f19] text-2xl overflow-hidden mb-3 shadow-lg cursor-pointer hover:scale-105 transition-transform"></div>
+                    <h3 id="sidebar-name" class="font-bold text-base"></h3>
+                    <p class="text-xs custom-primary-text font-semibold mt-0.5" id="sidebar-status">Đang hoạt động</p>
+                </div>
+                <div class="p-4 space-y-3" id="sidebar-actions-container">
+                    <p class="text-xs font-bold uppercase tracking-wider text-amber-500">Tùy chỉnh đoạn chat</p>
+                    <button onclick="openChangeNicknameModal()" class="w-full flex items-center gap-3 p-2.5 rounded-xl hover:bg-slate-500/10 text-xs font-medium transition-colors text-left">✏️ Chỉnh sửa biệt hiệu</button>
+                    <label class="w-full flex items-center gap-3 p-2.5 rounded-xl hover:bg-slate-500/10 text-xs font-medium transition-colors cursor-pointer">
+                        🎨 Thay đổi hình nền chat
+                        <input type="file" accept="image/*" class="hidden" onchange="handleChatBackgroundUpload(event)">
+                    </label>
+                    <p class="text-xs font-bold uppercase tracking-wider text-amber-500 pt-2">File và phương tiện</p>
+                    <button onclick="showSharedChatMedia()" class="w-full flex items-center gap-3 p-2.5 rounded-xl hover:bg-slate-500/10 text-xs font-medium transition-colors text-left">🖼️ Xem ảnh đã gửi trong đoạn chat</button>
+                </div>
+            </div>
+
+            <div id="chat-placeholder" class="flex-1 flex items-center justify-center p-12 opacity-50 font-medium text-sm">Chọn một người bạn hoặc nhóm chat ở danh sách bên trái để bắt đầu</div>
+        </main>
+    </div>
+
+    <!-- ================= MODAL TẠO NHÓM CHAT ================= -->
+    <div id="create-group-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-[150] flex items-center justify-center hidden p-4">
+        <div class="custom-card w-full max-w-lg rounded-3xl p-6 space-y-4 shadow-2xl relative border border-slate-700/50">
+            <div class="flex justify-between items-center border-b border-slate-500/20 pb-3">
+                <h3 class="font-black text-sm uppercase tracking-wider custom-primary-text">Tạo Nhóm Chat Mới</h3>
+                <button onclick="document.getElementById('create-group-modal').classList.add('hidden')" class="font-bold">×</button>
+            </div>
+            <div>
+                <label class="block text-xs font-bold uppercase mb-1.5 opacity-80">Tên Nhóm</label>
+                <input type="text" id="group-name-input" class="w-full bg-slate-500/10 border border-slate-500/30 rounded-xl px-4 py-2.5 text-sm focus:outline-none" placeholder="Nhập tên nhóm...">
+            </div>
+            <div>
+                <label class="block text-xs font-bold uppercase mb-1.5 opacity-80">Thêm thành viên (Bạn bè & Người dùng khác)</label>
+                <input type="text" id="group-user-search" oninput="renderGroupMemberSelection()" class="w-full bg-slate-500/10 border border-slate-500/30 rounded-xl px-4 py-2 text-xs mb-2 focus:outline-none" placeholder="Tìm kiếm thành viên...">
+                <div id="group-members-checkboxes" class="max-h-48 overflow-y-auto space-y-2 bg-slate-500/10 p-3 rounded-xl border border-slate-500/20"></div>
+            </div>
+            <div class="flex justify-end pt-2">
+                <button onclick="submitCreateGroup()" class="px-6 py-2.5 glow-button rounded-xl text-xs uppercase">Tạo Nhóm (Gửi lời mời)</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= MODAL TẠO BÌNH CHỌN (POLL) ================= -->
+    <div id="create-poll-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-[150] flex items-center justify-center hidden p-4">
+        <div class="custom-card w-full max-w-md rounded-3xl p-6 space-y-4 shadow-2xl relative border border-slate-700/50">
+            <div class="flex justify-between items-center border-b border-slate-500/20 pb-3">
+                <h3 class="font-black text-sm uppercase tracking-wider custom-primary-text">Tạo Bình Chọn Mới</h3>
+                <button onclick="document.getElementById('create-poll-modal').classList.add('hidden')" class="font-bold">×</button>
+            </div>
+            <div>
+                <label class="block text-xs font-bold uppercase mb-1.5 opacity-80">Chủ đề bình chọn</label>
+                <input type="text" id="poll-question-input" class="w-full bg-slate-500/10 border border-slate-500/30 rounded-xl px-4 py-2.5 text-sm focus:outline-none" placeholder="Nhập câu hỏi/chủ đề...">
+            </div>
+            <div class="space-y-2">
+                <label class="block text-xs font-bold uppercase opacity-80">Các lựa chọn</label>
+                <input type="text" class="poll-option-input w-full bg-slate-500/10 border border-slate-500/30 rounded-xl px-4 py-2 text-xs focus:outline-none" placeholder="Lựa chọn 1...">
+                <input type="text" class="poll-option-input w-full bg-slate-500/10 border border-slate-500/30 rounded-xl px-4 py-2 text-xs focus:outline-none" placeholder="Lựa chọn 2...">
+                <input type="text" class="poll-option-input w-full bg-slate-500/10 border border-slate-500/30 rounded-xl px-4 py-2 text-xs focus:outline-none" placeholder="Lựa chọn 3 (tùy chọn)...">
+            </div>
+            <div class="flex justify-end pt-2">
+                <button onclick="submitCreatePoll()" class="px-6 py-2.5 glow-button rounded-xl text-xs uppercase">Gửi Bình Chọn</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= MODAL ĐỔI TÊN NHÓM ================= -->
+    <div id="rename-group-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-[150] flex items-center justify-center hidden p-4">
+        <div class="custom-card w-full max-w-sm rounded-3xl p-6 space-y-4 shadow-2xl relative border border-slate-700/50">
+            <div class="flex justify-between items-center border-b border-slate-500/20 pb-3">
+                <h3 class="font-black text-sm uppercase tracking-wider custom-primary-text">Đổi Tên Nhóm</h3>
+                <button onclick="document.getElementById('rename-group-modal').classList.add('hidden')" class="font-bold">×</button>
+            </div>
+            <div>
+                <label class="block text-xs font-bold uppercase mb-1.5 opacity-80">Tên nhóm mới</label>
+                <input type="text" id="rename-group-input" class="w-full bg-slate-500/10 border border-slate-500/30 rounded-xl px-4 py-2.5 text-sm focus:outline-none" placeholder="Nhập tên nhóm mới...">
+            </div>
+            <div class="flex justify-end pt-2">
+                <button onclick="submitRenameGroup()" class="px-6 py-2.5 glow-button rounded-xl text-xs uppercase">Lưu Tên Nhóm</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= MODAL XEM ẢNH ĐÃ GỬI ================= -->
+    <div id="shared-media-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-[150] flex items-center justify-center hidden p-4">
+        <div class="custom-card w-full max-w-2xl rounded-3xl p-6 space-y-4 shadow-2xl relative border border-slate-700/50 max-h-[85vh] flex flex-col">
+            <div class="flex justify-between items-center border-b border-slate-500/20 pb-3 shrink-0">
+                <h3 class="font-black text-base uppercase tracking-wider custom-primary-text">Ảnh đã gửi trong đoạn chat</h3>
+                <button onclick="document.getElementById('shared-media-modal').classList.add('hidden')" class="font-bold text-lg">×</button>
+            </div>
+            <div id="shared-media-content" class="flex-1 overflow-y-auto space-y-6 pr-2"></div>
+        </div>
+    </div>
+
+    <!-- ================= MODAL ĐỔI BIỆT HIỆU ================= -->
+    <div id="nickname-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-[150] flex items-center justify-center hidden p-4">
+        <div class="custom-card w-full max-w-sm rounded-3xl p-6 space-y-4 shadow-2xl relative border border-slate-700/50">
+            <div class="flex justify-between items-center border-b border-slate-500/20 pb-3">
+                <h3 class="font-black text-sm uppercase tracking-wider custom-primary-text">Đổi Biệt Hiệu</h3>
+                <button onclick="document.getElementById('nickname-modal').classList.add('hidden')" class="font-bold">×</button>
+            </div>
+            <div>
+                <label class="block text-xs font-bold uppercase mb-1.5 opacity-80">Biệt hiệu mới cho bạn hoặc đối phương</label>
+                <input type="text" id="nickname-input" class="w-full bg-slate-500/10 border border-slate-500/30 rounded-xl px-4 py-2.5 text-sm focus:outline-none" placeholder="Nhập biệt hiệu...">
+            </div>
+            <div class="flex justify-end pt-2">
+                <button onclick="submitNickname()" class="px-6 py-2.5 glow-button rounded-xl text-xs uppercase">Lưu Biệt Hiệu</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= MODAL ĐĂNG BÀI ================= -->
+    <div id="post-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-[100] flex items-center justify-center hidden p-4">
+        <div class="custom-card w-full max-w-lg rounded-3xl p-6 space-y-5 shadow-2xl relative border border-slate-700/50">
+            <div class="flex justify-between items-center border-b border-slate-500/20 pb-4">
+                <h3 class="font-black text-base uppercase tracking-wider custom-primary-text">Tạo Bài Viết</h3>
+                <button onclick="closePostModal()" class="w-8 h-8 rounded-full bg-slate-500/20 flex items-center justify-center font-bold hover:bg-rose-600 hover:text-white transition-colors">×</button>
+            </div>
+            <textarea id="post-caption-input" rows="4" placeholder="Bạn đang nghĩ gì thế?" class="w-full bg-slate-500/10 border border-slate-500/20 rounded-2xl p-4 text-sm focus:outline-none resize-none"></textarea>
+            
+            <div id="post-images-preview" class="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto"></div>
+
+            <div class="flex items-center justify-between pt-2 border-t border-slate-500/20">
+                <label class="cursor-pointer px-4 py-2 bg-slate-500/10 hover:bg-slate-500/20 rounded-xl text-xs font-bold flex items-center gap-2 transition-colors">
+                    🖼️ Thêm Ảnh
+                    <input type="file" accept="image/*" multiple class="hidden" onchange="handlePostImagesSelect(event)">
+                </label>
+                <button onclick="submitNewPost()" class="px-6 py-2.5 glow-button rounded-xl text-xs uppercase">Đăng Bài</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= MODAL PHÓNG TO ẢNH ================= -->
+    <div id="image-viewer-modal" onclick="closeImageViewer()" class="fixed inset-0 bg-black/90 backdrop-blur-md z-[200] flex items-center justify-center hidden p-4 cursor-zoom-out">
+        <img id="viewer-img-tag" src="" class="max-w-full max-h-[90vh] object-contain rounded-xl shadow-2xl border border-white/10">
+    </div>
+
+    <!-- ================= MODAL THÊM THÀNH VIÊN VÀO NHÓM ================= -->
+    <div id="add-member-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-[150] flex items-center justify-center hidden p-4">
+        <div class="custom-card w-full max-w-lg rounded-3xl p-6 space-y-4 shadow-2xl relative border border-slate-700/50">
+            <div class="flex justify-between items-center border-b border-slate-500/20 pb-3">
+                <h3 class="font-black text-sm uppercase tracking-wider custom-primary-text">Thêm Thành Viên Vào Nhóm</h3>
+                <button onclick="document.getElementById('add-member-modal').classList.add('hidden')" class="font-bold">×</button>
+            </div>
+            <div>
+                <label class="block text-xs font-bold uppercase mb-1.5 opacity-80">Tìm bạn bè hoặc người dùng khác</label>
+                <input type="text" id="add-member-search" oninput="renderAddMemberSelection(activeChatId)" class="w-full bg-slate-500/10 border border-slate-500/30 rounded-xl px-4 py-2 text-xs mb-2 focus:outline-none" placeholder="Tìm kiếm thành viên...">
+                <div id="add-member-checkboxes" class="max-h-48 overflow-y-auto space-y-2 bg-slate-500/10 p-3 rounded-xl border border-slate-500/20"></div>
+            </div>
+            <div class="flex justify-end pt-2">
+                <button onclick="submitAddMembers()" class="px-6 py-2.5 glow-button rounded-xl text-xs uppercase">Thêm Vào Nhóm</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= MODAL ĐẶT BIỆT HIỆU THÀNH VIÊN TRONG NHÓM ================= -->
+    <div id="group-nickname-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-[150] flex items-center justify-center hidden p-4">
+        <div class="custom-card w-full max-w-sm rounded-3xl p-6 space-y-4 shadow-2xl relative border border-slate-700/50">
+            <div class="flex justify-between items-center border-b border-slate-500/20 pb-3">
+                <h3 class="font-black text-sm uppercase tracking-wider custom-primary-text">Đặt Biệt Hiệu Thành Viên</h3>
+                <button onclick="document.getElementById('group-nickname-modal').classList.add('hidden')" class="font-bold">×</button>
+            </div>
+            <div>
+                <label class="block text-xs font-bold uppercase mb-1.5 opacity-80">Nhập biệt hiệu mới</label>
+                <input type="text" id="group-nickname-input" class="w-full bg-slate-500/10 border border-slate-500/30 rounded-xl px-4 py-2.5 text-sm focus:outline-none" placeholder="Nhập biệt hiệu...">
+            </div>
+            <div class="flex justify-end pt-2">
+                <button onclick="submitGroupNickname()" class="px-6 py-2.5 glow-button rounded-xl text-xs uppercase">Lưu Biệt Hiệu</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= MODAL QUẢN LÝ TRẬN ĐẤU (DÀNH RIÊNG CHO ADMIN) ================= -->
+    <div id="match-admin-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-[200] flex items-center justify-center hidden p-4">
+        <div class="custom-card w-full max-w-lg rounded-3xl p-6 space-y-4 shadow-2xl relative border border-slate-700/50">
+            <div class="flex justify-between items-center border-b border-slate-500/20 pb-3">
+                <h3 class="font-black text-sm uppercase tracking-wider text-cyan-400">Quản Lý Trận Đấu (Admin Only)</h3>
+                <button onclick="document.getElementById('match-admin-modal').classList.add('hidden')" class="font-bold text-lg hover:text-rose-400">×</button>
+            </div>
+            <div class="space-y-3">
+                <input type="hidden" id="admin-match-id">
+                <div>
+                    <label class="block text-xs font-bold uppercase mb-1 opacity-70">Tên sự kiện / Giải đấu</label>
+                    <input type="text" id="match-title-input" class="w-full bg-slate-500/10 border border-slate-500/30 rounded-xl px-4 py-2.5 text-xs focus:outline-none" placeholder="Ví dụ: Spit Fighter Chapter 5">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold uppercase mb-1 opacity-70">Username Battler 1 (VD: Tyrant)</label>
+                        <input type="text" id="match-b1-user" class="w-full bg-slate-500/10 border border-slate-500/30 rounded-xl px-3 py-2 text-xs focus:outline-none" placeholder="Username 1...">
+                        <label class="block text-[10px] uppercase mt-1 opacity-60 cursor-pointer">Ảnh Avatar 1: <input type="file" id="match-b1-file" accept="image/*" class="text-[10px] mt-1"></label>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase mb-1 opacity-70">Username Battler 2 (VD: Forexx)</label>
+                        <input type="text" id="match-b2-user" class="w-full bg-slate-500/10 border border-slate-500/30 rounded-xl px-3 py-2 text-xs focus:outline-none" placeholder="Username 2...">
+                        <label class="block text-[10px] uppercase mt-1 opacity-60 cursor-pointer">Ảnh Avatar 2: <input type="file" id="match-b2-file" accept="image/*" class="text-[10px] mt-1"></label>
+                    </div>
+                </div>
+            </div>
+            <div class="flex justify-end gap-2 pt-3 border-t border-slate-500/20">
+                <button onclick="document.getElementById('match-admin-modal').classList.add('hidden')" class="px-4 py-2 bg-slate-500/20 rounded-xl text-xs font-bold">Hủy</button>
+                <button onclick="submitSaveMatch()" class="px-6 py-2 custom-primary-bg text-[#0b0f19] font-black rounded-xl text-xs uppercase shadow-lg">Lưu Trận Đấu</button>
+            </div>
+        </div>
+    </div>
+
+    <footer class="w-full py-4 text-center text-xs opacity-60 border-t backdrop-blur-md">
+        &copy; 2026 Spit Fighter League. All rights reserved.
+    </footer>
+
+    <!-- ================= IMPORT CÁC FILE JAVASCRIPT THEO THỨ TỰ ================= -->
+    <script src="js/state.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/profile.js"></script>
+    <script src="js/chat.js"></script>
+
+    <!-- GỌI KHỞI TẠO NAVBAR KHI TẢI TRANG -->
+    <script>
+        window.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderNavbarMenu === 'function') {
+                renderNavbarMenu();
+            }
+        });
+    </script>
+</body>
+</html>
